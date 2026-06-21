@@ -1,0 +1,14 @@
+{
+  "name": "@infermart/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./protocol.ts",
+  "exports": {
+    "./protocol": "./protocol.ts",
+    "./metering": "./metering.ts",
+    "./wdk": "./wdk.ts",
+    "./dashboard-server": "./dashboard-server.ts",
+    "./env": "./env.ts"
+  }
+}

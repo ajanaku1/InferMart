@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Local runtime state (seeds, keys, logs, coordination files)
+.spike/
+.qvac/
+*.log
+
+# Models (large binaries, fetched at runtime)
+*.gguf
+models/
+
+# Build artifacts
+dist/
+build/
+artifacts/
+cache/
+
+# Local tooling / editor
+.claude/
+ai/
+.vercel
+.DS_Store

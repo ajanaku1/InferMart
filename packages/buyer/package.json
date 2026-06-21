@@ -1,0 +1,11 @@
+{
+  "name": "@infermart/buyer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@infermart/shared": "*",
+    "@qvac/sdk": "^0.13.5",
+    "@tetherto/wdk-wallet-evm": "1.0.0-beta.13"
+  }
+}

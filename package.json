@@ -1,0 +1,35 @@
+{
+  "name": "infermart",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Peer-to-peer marketplace for idle on-device AI inference, settled in real testnet USDT.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/shared",
+    "packages/seller",
+    "packages/buyer"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"tests/*.test.ts\"",
+    "relay": "node packages/relay/relay.ts",
+    "seller": "node packages/seller/index.ts",
+    "buyer": "node packages/buyer/index.ts",
+    "fund-wallets": "node scripts/fund-wallets.ts",
+    "deploy-usdt": "node scripts/deploy-usdt.ts",
+    "verify-settlement": "node scripts/verify-settlement.ts",
+    "demo": "bash scripts/demo.sh"
+  },
+  "dependencies": {
+    "@qvac/sdk": "^0.13.5",
+    "@tetherto/wdk-wallet": "^1.0.0-beta.11",
+    "@tetherto/wdk-wallet-evm": "^1.0.0-beta.13"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.0",
+    "solc": "^0.8.26"
+  }
+}

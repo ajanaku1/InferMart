@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>InferMart · Seller</title>
+<style>
+  :root{
+    --bg:#f6f7fb;--card:#fff;--line:#e7eaf2;--ink:#1c2230;--ink-dim:#5a6478;--ink-faint:#97a0b4;
+    --indigo:#5b5bf0;--indigo-soft:#eef0ff;--teal:#13b6a4;--teal-soft:#e3f8f5;--green:#1aa663;
+    --sans:"Inter",system-ui,-apple-system,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --shadow:0 1px 2px rgba(20,28,50,.04),0 8px 24px rgba(20,28,50,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--card);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;letter-spacing:-.2px}
+  .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--indigo));box-shadow:0 6px 16px rgba(19,182,164,.32)}
+  .brand small{color:var(--ink-faint);font-weight:500;font-size:12px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:#fff4e5;color:#9a5b07;font-weight:600;font-size:12.5px}
+  .pill.live{background:var(--teal-soft);color:var(--teal)}
+  .pill .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .wrap{max-width:640px;margin:0 auto;padding:28px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);margin:0 0 4px}
+  .lead{color:var(--ink-dim);margin:0 0 16px;font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-dim);margin-bottom:8px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .stat{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .stat .k{font-size:12px;color:var(--ink-faint);font-weight:600}
+  .stat .v{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-top:3px;font-family:var(--mono)}
+  .v.green{color:var(--green)} .stat .u{font-size:11.5px;color:var(--ink-faint);font-family:var(--mono)}
+  .chip{display:inline-block;font-size:11px;color:var(--teal);background:var(--teal-soft);padding:2px 8px;border-radius:999px;font-weight:600;margin-left:6px}
+  .req{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+  .req:last-child{border-bottom:0}
+  .req .l{display:flex;align-items:center;gap:11px}
+  .ava{width:30px;height:30px;border-radius:9px;background:var(--indigo-soft);color:var(--indigo);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700}
+  .req .m{font-size:12.5px;color:var(--ink-dim)}.req .m b{color:var(--ink);font-weight:600}
+  .req .amt{font-family:var(--mono);font-weight:600;color:var(--green)}
+  .req .tx{font-family:var(--mono);font-size:11px;color:var(--indigo);text-decoration:none}
+  .empty{color:var(--ink-faint);font-size:13px;text-align:center;padding:14px}
+  .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink);background:#fbfcff;border:1px solid var(--line);border-radius:10px;padding:11px;word-break:break-all}
+  .seed{height:9px;border-radius:5px;background:#eceef6;overflow:hidden;margin-top:10px}
+  .seed i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--indigo));width:0;transition:width .3s}
+  .sub{font-size:11.5px;color:var(--ink-faint);margin-top:9px}
+  footer{text-align:center;padding:22px;color:var(--ink-faint);font-size:12px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="logo"></span> InferMart <small>// seller · host your idle AI</small></div>
+    <span class="pill" id="state"><span class="d"></span> <span id="stateText">booting…</span></span>
+  </header>
+
+  <div class="wrap">
+    <h2>You're the seller</h2>
+    <p class="lead">An everyday laptop renting out idle inference on llama-3.2-1b, paid in USDT.</p>
+
+    <div class="card" id="seedCard">
+      <label>Loading model & opening P2P endpoint</label>
+      <div class="seed"><i id="seedBar"></i></div>
+      <div class="sub" id="seedSub">seeding model…</div>
+    </div>
+
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="k">Earned <span class="chip">on-chain</span></div><div class="v green" id="earned">0.000000</div><div class="u">USDT · 0x…</div></div>
+        <div class="stat"><div class="k">Requests served</div><div class="v" id="served">0</div><div class="u">via Holepunch P2P</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Recent jobs</label>
+      <div id="jobs"><div class="empty">waiting for the first request…</div></div>
+    </div>
+
+    <div class="card">
+      <label>Provider identity</label>
+      <div class="mono" id="provkey">—</div>
+      <div class="sub" id="identity"></div>
+    </div>
+  </div>
+  <footer>InferMart — idle on-device inference, settled in real testnet USDT · QVAC · WDK · Holepunch</footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const usdt = (base) => (Number(base) / 1e6).toFixed(6);
+  let walletShort = "0x…";
+
+  const es = new EventSource("/events");
+  es.addEventListener("status", (e) => {
+    const s = JSON.parse(e.data);
+    if (s.phase === "seeding") {
+      $("stateText").textContent = "loading model" + (s.percent!=null ? " "+s.percent+"%" : "…");
+      if (s.percent!=null) $("seedBar").style.width = s.percent + "%";
+      $("seedSub").textContent = "seeding model from the distributed registry…";
+    } else if (s.phase === "live") {
+      $("state").className = "pill live"; $("stateText").textContent = "live · serving P2P";
+      $("seedCard").style.display = "none";
+      if (s.providerPublicKey) $("provkey").textContent = s.providerPublicKey;
+      if (s.walletAddress){ walletShort = s.walletAddress.slice(0,6)+"…"+s.walletAddress.slice(-4);
+        document.querySelectorAll(".stat .u")[0].textContent = "USDT · " + walletShort; }
+      $("identity").textContent = "wallet " + (s.walletAddress||"") + (s.relayKey ? " · relay "+s.relayKey.slice(0,8)+"…" : "") + " · firewall on";
+    }
+  });
+  es.addEventListener("balance", (e) => {
+    const b = JSON.parse(e.data);
+    $("earned").textContent = usdt(b.balanceBaseUnits);
+  });
+  es.addEventListener("request", (e) => {
+    const { receipt, served } = JSON.parse(e.data);
+    $("served").textContent = served;
+    const jobs = $("jobs"); const empty = jobs.querySelector(".empty"); if (empty) empty.remove();
+    const row = document.createElement("div"); row.className = "req";
+    const id2 = receipt.requestId.slice(0,2);
+    row.innerHTML = '<div class="l"><div class="ava">'+id2+'</div><div class="m"><b>'+receipt.generatedTokens+' tokens</b><br>req '+receipt.requestId.slice(0,8)+'…</div></div>'+
+      '<div style="text-align:right"><div class="amt">+'+usdt(receipt.amountBaseUnits)+'</div>'+
+      '<a class="tx" target="_blank" href="'+receipt.explorerUrl+'">'+receipt.txHash.slice(0,10)+'… ↗</a></div>';
+    jobs.prepend(row);
+  });
+</script>
+</body>
+</html>

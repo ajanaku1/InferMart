@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>InferMart — Option B · Calm Utility</title>
+<style>
+  /* DNA: light · spacious · consumer-friendly · soft cards · indigo+teal · generous whitespace */
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --line:#e7eaf2; --ink:#1c2230; --ink-dim:#5a6478; --ink-faint:#97a0b4;
+    --indigo:#5b5bf0; --indigo-soft:#eef0ff; --teal:#13b6a4; --teal-soft:#e3f8f5;
+    --green:#1aa663; --amber:#e8920a; --red:#e0455a;
+    --sans:"Inter",system-ui,-apple-system,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --shadow:0 1px 2px rgba(20,28,50,.04),0 8px 24px rgba(20,28,50,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--card);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;letter-spacing:-.2px}
+  .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--indigo),var(--teal));box-shadow:0 6px 16px rgba(91,91,240,.3)}
+  .brand small{color:var(--ink-faint);font-weight:500;font-size:12px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:var(--teal-soft);color:var(--teal);font-weight:600;font-size:12.5px}
+  .pill .d{width:7px;height:7px;border-radius:50%;background:var(--teal)}
+  .pill.net{background:var(--indigo-soft);color:var(--indigo)}
+  .wrap{max-width:1160px;margin:0 auto;padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .col h2{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);margin:0 0 4px}
+  .col .lead{color:var(--ink-dim);margin:0 0 16px;font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-dim);margin-bottom:8px}
+  textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px;font-family:var(--sans);font-size:14px;color:var(--ink);resize:none;background:#fcfcff}
+  textarea:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 4px var(--indigo-soft)}
+  .btn{margin-top:12px;width:100%;border:0;border-radius:12px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;
+    background:linear-gradient(135deg,var(--indigo),#7a6bff);color:#fff;box-shadow:0 8px 18px rgba(91,91,240,.28)}
+  .hint{margin-top:10px;font-size:12px;color:var(--ink-faint);text-align:center}
+  .stream{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:15px;font-size:14px;line-height:1.6;min-height:74px}
+  .cur{color:var(--indigo);font-weight:700}
+  .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--teal);font-weight:600}
+  .live .d{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.2s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .stat{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .stat .k{font-size:12px;color:var(--ink-faint);font-weight:600}
+  .stat .v{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-top:3px;font-family:var(--mono)}
+  .v.indigo{color:var(--indigo)} .v.green{color:var(--green)}
+  .stat .u{font-size:11.5px;color:var(--ink-faint);font-family:var(--mono)}
+  .bar{height:9px;border-radius:5px;background:#eceef6;overflow:hidden;margin-top:10px}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--indigo),var(--teal));border-radius:5px}
+  .req{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+  .req:last-child{border-bottom:0}
+  .req .l{display:flex;align-items:center;gap:11px}
+  .ava{width:30px;height:30px;border-radius:9px;background:var(--indigo-soft);color:var(--indigo);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700}
+  .req .m{font-size:12.5px;color:var(--ink-dim)} .req .m b{color:var(--ink);font-weight:600}
+  .req .amt{font-family:var(--mono);font-weight:600;color:var(--green)}
+  .req .tx{font-family:var(--mono);font-size:11px;color:var(--indigo);text-decoration:none}
+  .airplane{display:flex;gap:13px;align-items:center;background:linear-gradient(135deg,#fff7ec,#fef1f2);border:1px solid #fde2c4;border-radius:14px;padding:15px 17px}
+  .airplane .ic{font-size:22px}
+  .airplane .t{font-size:13px;color:#8a5a12} .airplane .t b{color:#5a3a08}
+  footer{text-align:center;padding:22px;color:var(--ink-faint);font-size:12px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="logo"></span> InferMart <small>// rent a neighbour's AI, pay by the token</small></div>
+    <div style="display:flex;gap:10px"><span class="pill"><span class="d"></span> P2P link healthy</span><span class="pill net">Sepolia testnet</span></div>
+  </header>
+
+  <div class="wrap">
+    <!-- BUYER -->
+    <div class="col">
+      <h2>You're the buyer</h2>
+      <p class="lead">No model on this device. Borrow a peer's, pay only for what you use.</p>
+
+      <div class="card">
+        <label>Ask anything</label>
+        <textarea rows="2">In one sentence, what is peer-to-peer compute?</textarea>
+        <button class="btn">Send over P2P</button>
+        <div class="hint">You're charged in USDT only after a successful answer.</div>
+      </div>
+
+      <div class="card">
+        <label>Answer <span class="live"><span class="d"></span> streaming from a peer</span></label>
+        <div class="stream">Peer-to-peer compute lets independent devices share and run tasks directly, with no central server in between<span class="cur">▌</span></div>
+      </div>
+
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><div class="k">This answer</div><div class="v indigo">0.000039</div><div class="u">USDT · 39 tokens</div></div>
+          <div class="stat"><div class="k">Spent this session</div><div class="v">0.0381</div><div class="u">of 1.0000 cap</div><div class="bar"><i style="width:3.8%"></i></div></div>
+        </div>
+      </div>
+
+      <div class="airplane"><span class="ic">✈️</span><div class="t"><b>Wi-Fi off — still working.</b> Your request rides the local peer link, not the cloud. Nothing to disconnect from.</div></div>
+    </div>
+
+    <!-- SELLER -->
+    <div class="col">
+      <h2>Your peer is the seller</h2>
+      <p class="lead">An everyday laptop renting out its idle AI on llama-3.2-1b.</p>
+
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><div class="k">Earned today</div><div class="v green">0.0381</div><div class="u">USDT · paid on-chain</div></div>
+          <div class="stat"><div class="k">Requests served</div><div class="v">128</div><div class="u">~41 tokens/sec</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>Recent jobs</label>
+        <div class="req"><div class="l"><div class="ava">4c</div><div class="m"><b>39 tokens</b><br>req 4c80…d1ad</div></div><div style="text-align:right"><div class="amt">+0.000039</div><a class="tx">0xa91c…3f7 ↗</a></div></div>
+        <div class="req"><div class="l"><div class="ava">7b</div><div class="m"><b>512 tokens</b><br>req 7b21…99ac</div></div><div style="text-align:right"><div class="amt">+0.000512</div><a class="tx">0x4d8e…b1a ↗</a></div></div>
+        <div class="req"><div class="l"><div class="ava">0f</div><div class="m"><b>1024 tokens</b><br>req 0fbc…b0e9</div></div><div style="text-align:right"><div class="amt">+0.001024</div><a class="tx">0x77fa…e2c ↗</a></div></div>
+      </div>
+
+      <div class="card">
+        <label>Wallet receiving payments</label>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--ink);background:#fbfcff;border:1px solid var(--line);border-radius:10px;padding:11px">0x4F09…24E2</div>
+        <div class="hint" style="text-align:left;margin-top:9px">Provider key 4c80…d1ad · relay f931…a2e4 · firewall on</div>
+      </div>
+    </div>
+  </div>
+  <footer>InferMart — idle on-device inference, settled in real testnet USDT · QVAC · WDK · Holepunch</footer>
+</body>
+</html>

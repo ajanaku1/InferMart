@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>InferMart · Buyer</title>
+<style>
+  :root{
+    --bg:#f6f7fb;--card:#fff;--line:#e7eaf2;--ink:#1c2230;--ink-dim:#5a6478;--ink-faint:#97a0b4;
+    --indigo:#5b5bf0;--indigo-soft:#eef0ff;--teal:#13b6a4;--teal-soft:#e3f8f5;
+    --green:#1aa663;--amber:#e8920a;--red:#e0455a;
+    --sans:"Inter",system-ui,-apple-system,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --shadow:0 1px 2px rgba(20,28,50,.04),0 8px 24px rgba(20,28,50,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--card);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;letter-spacing:-.2px}
+  .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--indigo),var(--teal));box-shadow:0 6px 16px rgba(91,91,240,.3)}
+  .brand small{color:var(--ink-faint);font-weight:500;font-size:12px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:var(--teal-soft);color:var(--teal);font-weight:600;font-size:12.5px}
+  .pill .d{width:7px;height:7px;border-radius:50%;background:var(--teal)}
+  .pill.off{background:#fdecee;color:var(--red)} .pill.off .d{background:var(--red)}
+  .wrap{max-width:640px;margin:0 auto;padding:28px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);margin:0 0 4px}
+  .lead{color:var(--ink-dim);margin:0 0 16px;font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-dim);margin-bottom:8px}
+  textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px;font-family:var(--sans);font-size:14px;color:var(--ink);resize:none;background:#fcfcff}
+  textarea:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 4px var(--indigo-soft)}
+  .btn{margin-top:12px;width:100%;border:0;border-radius:12px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;background:linear-gradient(135deg,var(--indigo),#7a6bff);color:#fff;box-shadow:0 8px 18px rgba(91,91,240,.28)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .hint{margin-top:10px;font-size:12px;color:var(--ink-faint);text-align:center}
+  .stream{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:15px;font-size:14px;line-height:1.6;min-height:74px;white-space:pre-wrap}
+  .cur{color:var(--indigo);font-weight:700;animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+  .live{display:none;align-items:center;gap:6px;font-size:12px;color:var(--teal);font-weight:600}
+  .live.on{display:inline-flex}
+  .live .d{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.2s infinite}@keyframes pulse{50%{opacity:.35}}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .stat{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .stat .k{font-size:12px;color:var(--ink-faint);font-weight:600}
+  .stat .v{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-top:3px;font-family:var(--mono)}
+  .v.indigo{color:var(--indigo)} .stat .u{font-size:11.5px;color:var(--ink-faint);font-family:var(--mono)}
+  .bar{height:9px;border-radius:5px;background:#eceef6;overflow:hidden;margin-top:10px}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--indigo),var(--teal));border-radius:5px;transition:width .4s}
+  .tx{font-family:var(--mono);font-size:12px;color:var(--indigo);text-decoration:none}
+  .receipt{display:none;margin-top:12px;padding:11px 13px;border-radius:10px;font-size:12.5px;font-family:var(--mono)}
+  .receipt.show{display:block}
+  .receipt.settled{background:var(--teal-soft);color:#0c7d70} .receipt.rejected{background:#fff4e5;color:#9a5b07}
+  .receipt.failed{background:#fdecee;color:#a32437}
+  .airplane{display:flex;gap:13px;align-items:center;background:linear-gradient(135deg,#fff7ec,#fef1f2);border:1px solid #fde2c4;border-radius:14px;padding:15px 17px}
+  .airplane .ic{font-size:22px}.airplane .t{font-size:13px;color:#8a5a12}.airplane .t b{color:#5a3a08}
+  footer{text-align:center;padding:22px;color:var(--ink-faint);font-size:12px}
+  .addr{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="logo"></span> InferMart <small>// buyer · rent a peer's AI</small></div>
+    <span class="pill" id="link"><span class="d"></span> <span id="linkText">connecting…</span></span>
+  </header>
+
+  <div class="wrap">
+    <h2>You're the buyer</h2>
+    <p class="lead">No model on this device. Borrow a peer's, pay only for what you use. <span class="addr" id="addr"></span></p>
+
+    <div class="card">
+      <label>Ask anything</label>
+      <textarea id="prompt" rows="2">In one sentence, what is peer-to-peer compute?</textarea>
+      <button class="btn" id="send" disabled>Connecting to provider…</button>
+      <div class="hint">You're charged in USDT only after a successful answer.</div>
+    </div>
+
+    <div class="card">
+      <label>Answer <span class="live" id="live"><span class="d"></span> streaming from a peer</span></label>
+      <div class="stream" id="stream">—</div>
+      <div class="receipt" id="receipt"></div>
+    </div>
+
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="k">This answer</div><div class="v indigo" id="cost">0.000000</div><div class="u" id="costSub">USDT</div></div>
+        <div class="stat"><div class="k">Spent this session</div><div class="v" id="spent">0.000000</div><div class="u" id="cap">of 1.000000 cap</div><div class="bar"><i id="spendBar" style="width:0%"></i></div></div>
+      </div>
+    </div>
+
+    <div class="airplane"><span class="ic">✈️</span><div class="t"><b>Cut your Wi-Fi mid-answer.</b> The request rides the local peer link, not the cloud — there's nothing to disconnect from.</div></div>
+  </div>
+  <footer>InferMart — idle on-device inference, settled in real testnet USDT · QVAC · WDK · Holepunch</footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const usdt = (base) => (Number(base) / 1e6).toFixed(6);
+  let pricePer1k = 1000, capBaseUnits = 1000000;
+
+  const es = new EventSource("/events");
+  es.addEventListener("status", (e) => {
+    const s = JSON.parse(e.data);
+    if (s.capBaseUnits) capBaseUnits = s.capBaseUnits;
+    if (s.pricePer1k) pricePer1k = s.pricePer1k;
+    if (s.buyerAddress) $("addr").textContent = "wallet " + s.buyerAddress.slice(0,6) + "…" + s.buyerAddress.slice(-4);
+    if (s.phase === "ready") { $("send").disabled = false; $("send").textContent = "Send over P2P"; $("linkText").textContent = "P2P link ready"; }
+    else if (s.phase === "connecting") $("linkText").textContent = "connecting…";
+  });
+  es.addEventListener("request", (e) => {
+    const r = JSON.parse(e.data);
+    $("stream").textContent = "";
+    $("stream").innerHTML = '<span class="cur">▌</span>';
+    $("live").classList.add("on");
+    $("receipt").classList.remove("show");
+    $("send").disabled = true;
+  });
+  es.addEventListener("chunk", (e) => {
+    const c = JSON.parse(e.data);
+    const cur = $("stream").querySelector(".cur");
+    if (cur) cur.remove();
+    $("stream").append(document.createTextNode(c.token));
+    const span = document.createElement("span"); span.className="cur"; span.textContent="▌";
+    $("stream").append(span);
+  });
+  es.addEventListener("done", (e) => {
+    const d = JSON.parse(e.data);
+    $("live").classList.remove("on");
+    const cur = $("stream").querySelector(".cur"); if (cur) cur.remove();
+    const cost = Math.ceil((d.stats.generatedTokens * pricePer1k) / 1000);
+    $("cost").textContent = usdt(cost);
+    $("costSub").textContent = "USDT · " + d.stats.generatedTokens + " tokens";
+  });
+  es.addEventListener("receipt", (e) => {
+    const r = JSON.parse(e.data);
+    const box = $("receipt"); box.className = "receipt show " + r.status;
+    if (r.status === "settled")
+      box.innerHTML = "✓ paid " + usdt(r.amountBaseUnits) + " USDT · <a class='tx' target='_blank' href='" + r.explorerUrl + "'>" + r.txHash.slice(0,10) + "… ↗</a>";
+    else if (r.status === "rejected") box.textContent = "✋ blocked by session cap — not charged. " + (r.reason||"");
+    else box.textContent = "⚠ settlement failed — not charged. " + (r.reason||"");
+    $("send").disabled = false;
+  });
+  es.addEventListener("spend", (e) => {
+    const s = JSON.parse(e.data);
+    $("spent").textContent = usdt(s.spentBaseUnits);
+    $("cap").textContent = "of " + usdt(s.capBaseUnits) + " cap";
+    $("spendBar").style.width = Math.min(100, (s.spentBaseUnits / s.capBaseUnits) * 100) + "%";
+  });
+
+  $("send").addEventListener("click", async () => {
+    const prompt = $("prompt").value.trim(); if (!prompt) return;
+    $("send").disabled = true; $("send").textContent = "Sending…";
+    await fetch("/ask", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({ prompt }) });
+    $("send").textContent = "Send over P2P";
+  });
+</script>
+</body>
+</html>

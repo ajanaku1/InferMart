@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>InferMart — Option C · Infra / Ops</title>
+<style>
+  /* DNA: dark · all-monospace · telemetry/throughput · grid lines · lime+slate · ops console */
+  :root{
+    --bg:#0b0e0c; --panel:#0f1411; --panel-2:#121913; --line:#1d2620; --grid:#141b16;
+    --ink:#c8d4cb; --ink-dim:#7d8d82; --ink-faint:#4f5b53;
+    --lime:#9ef01a; --lime-dim:#6a9e1a; --cyan:#36c5d6; --amber:#f6c945; --red:#ff5b51; --mag:#d96bff;
+    --mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:12.5px;line-height:1.5;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:34px 34px;-webkit-font-smoothing:antialiased}
+  .bar{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--line);background:#0a0d0b}
+  .bar .l{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px}
+  .sq{width:16px;height:16px;background:var(--lime);box-shadow:0 0 12px var(--lime);clip-path:polygon(0 0,100% 0,100% 70%,70% 100%,0 100%)}
+  .bar .r{display:flex;gap:18px;color:var(--ink-dim);font-size:11px}
+  .bar .r b{color:var(--lime)}
+  .k{color:var(--ink-faint)} .v{color:var(--ink)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+  .col{background:var(--bg);padding:14px 16px;min-height:calc(100vh - 76px)}
+  .hd{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:12px}
+  .hd h2{margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--lime);font-weight:700}
+  .hd .role{font-size:10px;color:var(--ink-faint);border:1px solid var(--line);padding:2px 7px;border-radius:3px}
+  .blk{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:11px;margin-bottom:11px}
+  .blk .lbl{color:var(--ink-faint);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+  .gauges{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+  .g{border:1px solid var(--line);border-radius:3px;padding:9px;background:#0b100c}
+  .g .n{font-size:20px;color:var(--lime);font-weight:700}
+  .g .n.cy{color:var(--cyan)} .g .n.am{color:var(--amber)}
+  .g .t{font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .spark{display:flex;align-items:flex-end;gap:2px;height:34px;margin-top:9px}
+  .spark i{flex:1;background:var(--lime-dim);border-radius:1px 1px 0 0;opacity:.85}
+  .spark i.hi{background:var(--lime);box-shadow:0 0 6px var(--lime)}
+  .io{background:#0a0d0b;border:1px solid var(--line);border-radius:4px;padding:10px;white-space:pre-wrap;word-break:break-word}
+  .io .p{color:var(--cyan)} .io .o{color:var(--ink)} .io .cur{color:var(--lime);animation:bl 1s steps(1) infinite}
+  @keyframes bl{50%{opacity:0}}
+  .prompt{width:100%;background:#0a0d0b;border:1px solid var(--line);color:var(--ink);font-family:var(--mono);font-size:12.5px;padding:9px;border-radius:4px;resize:none}
+  .run{margin-top:9px;width:100%;background:var(--lime);color:#0a0d0b;border:0;border-radius:4px;padding:9px;font-family:var(--mono);font-weight:700;letter-spacing:1px;cursor:pointer}
+  .meter{height:7px;background:#0a0d0b;border:1px solid var(--line);border-radius:2px;overflow:hidden;margin-top:7px}
+  .meter i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--lime) 0 6px,transparent 6px 9px)}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{text-align:left;color:var(--ink-faint);font-weight:500;padding:5px 6px;border-bottom:1px solid var(--line);text-transform:uppercase;font-size:9.5px;letter-spacing:1px}
+  td{padding:6px;border-bottom:1px solid #131a15;color:var(--ink-dim)}
+  td .ok{color:var(--lime)} td .h{color:var(--cyan)}
+  .alert{border:1px solid var(--amber);background:rgba(246,201,69,.06);border-radius:4px;padding:9px 11px;color:var(--amber);font-size:11px;display:flex;gap:9px;align-items:center;margin-top:11px}
+  .alert b{color:#fff}
+  .ft{padding:7px 16px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:10px;display:flex;justify-content:space-between;background:#0a0d0b}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="l"><span class="sq"></span> INFERMART <span style="color:var(--ink-faint);font-weight:400">ops console // option C</span></div>
+    <div class="r">
+      <span><span class="k">link=</span><b>relay:up</b></span>
+      <span><span class="k">chain=</span><b>sepolia</b></span>
+      <span><span class="k">rate=</span><b>0.001/1k</b></span>
+      <span><span class="k">uptime=</span><span class="v">04:12:55</span></span>
+    </div>
+  </div>
+
+  <div class="cols">
+    <!-- BUYER -->
+    <section class="col">
+      <div class="hd"><h2>node://buyer</h2><span class="role">consumer · no model</span></div>
+
+      <div class="blk">
+        <div class="lbl">stdin · prompt</div>
+        <textarea class="prompt" rows="2">In one sentence, what is peer-to-peer compute?</textarea>
+        <button class="run">▸ DISPATCH P2P</button>
+      </div>
+
+      <div class="blk">
+        <div class="lbl">stdout · stream &lt;req 4c80…d1ad&gt;</div>
+        <div class="io"><span class="o">Peer-to-peer compute distributes tasks directly across independent devices with no central coordinator</span><span class="cur">█</span></div>
+      </div>
+
+      <div class="blk">
+        <div class="lbl">meter</div>
+        <div class="gauges">
+          <div class="g"><div class="n">39</div><div class="t">gen tok</div></div>
+          <div class="g"><div class="n cy">46</div><div class="t">prompt tok</div></div>
+          <div class="g"><div class="n am">41.2</div><div class="t">tok/s</div></div>
+        </div>
+        <div class="lbl" style="margin-top:11px">session spend · cap-guard armed</div>
+        <div style="display:flex;justify-content:space-between"><span class="k">0.038100 USDT</span><span class="k">/ 1.000000</span></div>
+        <div class="meter"><i style="width:3.8%"></i></div>
+      </div>
+
+      <div class="alert">✈ <span><b>WAN=DOWN</b> · transport=local-relay · inference=CONTINUING · cloud-fallback=N/A</span></div>
+    </section>
+
+    <!-- SELLER -->
+    <section class="col">
+      <div class="hd"><h2>node://seller</h2><span class="role">provider · llama-3.2-1b-q4</span></div>
+
+      <div class="blk">
+        <div class="lbl">throughput · last 40 req</div>
+        <div class="spark">
+          <i style="height:40%"></i><i style="height:55%"></i><i style="height:48%"></i><i style="height:70%"></i>
+          <i style="height:62%"></i><i style="height:85%" class="hi"></i><i style="height:58%"></i><i style="height:73%"></i>
+          <i style="height:90%" class="hi"></i><i style="height:66%"></i><i style="height:52%"></i><i style="height:78%"></i>
+          <i style="height:60%"></i><i style="height:95%" class="hi"></i><i style="height:71%"></i><i style="height:50%"></i>
+          <i style="height:82%"></i><i style="height:64%"></i><i style="height:76%"></i><i style="height:88%" class="hi"></i>
+        </div>
+        <div class="gauges" style="margin-top:11px">
+          <div class="g"><div class="n">128</div><div class="t">served</div></div>
+          <div class="g"><div class="n cy">0.0381</div><div class="t">USDT in</div></div>
+          <div class="g"><div class="n am">99.2%</div><div class="t">ack rate</div></div>
+        </div>
+      </div>
+
+      <div class="blk">
+        <div class="lbl">settlement log · on-chain</div>
+        <table>
+          <thead><tr><th>req</th><th>tok</th><th>usdt</th><th>tx</th><th>st</th></tr></thead>
+          <tbody>
+            <tr><td>4c80…d1ad</td><td>39</td><td>0.000039</td><td class="h">0xa91c…3f7</td><td class="ok">ACK</td></tr>
+            <tr><td>7b21…99ac</td><td>512</td><td>0.000512</td><td class="h">0x4d8e…b1a</td><td class="ok">ACK</td></tr>
+            <tr><td>0fbc…b0e9</td><td>1024</td><td>0.001024</td><td class="h">0x77fa…e2c</td><td class="ok">ACK</td></tr>
+            <tr><td>9cd6…7b4a</td><td>206</td><td>0.000206</td><td class="h">0x2bd1…44f</td><td class="ok">ACK</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="blk">
+        <div class="lbl">identity</div>
+        <div style="color:var(--cyan);word-break:break-all">provider=4c801beaf744bae36ed5948c7575e20da5c1448c9ff7fabc734f749dd7eed1ad</div>
+        <div class="k" style="margin-top:6px">wallet=0x4F09…24E2 · relay=f931f805…a2e4 · firewall=allow</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="ft"><span>infermart · idle on-device inference → USDT</span><span>QVAC · WDK · Holepunch · blk 6481203</span></div>
+</body>
+</html>
