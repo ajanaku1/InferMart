@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>InferMart · Seller</title>
+<link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
 <style>
   :root{
     --bg:#f6f7fb;--card:#fff;--line:#e7eaf2;--ink:#1c2230;--ink-dim:#5a6478;--ink-faint:#97a0b4;
@@ -15,7 +16,7 @@
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
   header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--card);border-bottom:1px solid var(--line)}
   .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;letter-spacing:-.2px}
-  .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--indigo));box-shadow:0 6px 16px rgba(19,182,164,.32)}
+  .logo{width:30px;height:30px;border-radius:9px;box-shadow:0 6px 16px rgba(19,182,164,.32);flex-shrink:0}
   .brand small{color:var(--ink-faint);font-weight:500;font-size:12px}
   .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:#fff4e5;color:#9a5b07;font-weight:600;font-size:12.5px}
   .pill.live{background:var(--teal-soft);color:var(--teal)}
@@ -43,29 +44,52 @@
   .seed{height:9px;border-radius:5px;background:#eceef6;overflow:hidden;margin-top:10px}
   .seed i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--indigo));width:0;transition:width .3s}
   .sub{font-size:11.5px;color:var(--ink-faint);margin-top:9px}
+  .gate{display:flex;gap:13px;align-items:flex-start;background:linear-gradient(135deg,#fff7ec,#fef1f2);border:1px solid #fde2c4;border-radius:14px;padding:15px 17px;margin-bottom:18px}
+  .gate.open{background:linear-gradient(135deg,#eefaf6,#eef0ff);border-color:#c4ecdf}
+  .gate .ic{font-size:22px}.gate .t{font-size:13px;color:#8a5a12}.gate .t b{color:#5a3a08}
+  .gate.open .t{color:#0c7d70}.gate.open .t b{color:#0a5c52}
+  .adm{font-family:var(--mono);font-size:11px;color:#0c7d70;margin-top:7px}
+  .model{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .model:last-child{border-bottom:0}
+  .model .nm{font-family:var(--mono);font-size:11.5px;color:var(--ink);flex:1}
+  .tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+  .tag.stt{background:#eef0ff;color:var(--indigo)}.tag.llm{background:#e9f6ff;color:#0a7ea4}.tag.tts{background:var(--teal-soft);color:#0c7d70}
+  .req .mod{font-size:10px;color:var(--ink-faint);font-family:var(--mono)}
   footer{text-align:center;padding:22px;color:var(--ink-faint);font-size:12px}
 </style>
 </head>
 <body>
   <header>
-    <div class="brand"><span class="logo"></span> InferMart <small>// seller · host your idle AI</small></div>
+    <div class="brand"><svg class="logo" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="24" y1="24" x2="232" y2="232" gradientUnits="userSpaceOnUse"><stop stop-color="#13b6a4"/><stop offset="1" stop-color="#5b5bf0"/></linearGradient></defs><rect x="8" y="8" width="240" height="240" rx="58" fill="url(#lg)"/><g fill="#fff"><circle cx="84" cy="128" r="26" fill="none" stroke="#fff" stroke-width="13"/><circle cx="120" cy="128" r="5.5"/><circle cx="136" cy="128" r="5.5"/><circle cx="152" cy="128" r="5.5"/><circle cx="186" cy="128" r="24"/></g></svg> InferMart <small>// seller · host your idle AI</small></div>
     <span class="pill" id="state"><span class="d"></span> <span id="stateText">booting…</span></span>
   </header>
 
   <div class="wrap">
     <h2>You're the seller</h2>
-    <p class="lead">An everyday laptop renting out idle inference on llama-3.2-1b, paid in USDT.</p>
+    <p class="lead">An everyday laptop renting out idle multi-modal inference (Llama · Whisper · Supertonic), paid in USDT.</p>
 
     <div class="card" id="seedCard">
-      <label>Loading model & opening P2P endpoint</label>
+      <label>Loading models & opening P2P endpoint</label>
       <div class="seed"><i id="seedBar"></i></div>
-      <div class="sub" id="seedSub">seeding model…</div>
+      <div class="sub" id="seedSub">seeding models…</div>
+    </div>
+
+    <div class="gate" id="gate">
+      <span class="ic" id="gateIc">🔒</span>
+      <div class="t"><b id="gateTitle">Firewall locked.</b> <span id="gateMsg">The QVAC firewall admits no one until their USDT deposit confirms on-chain — it's the escrow gate.</span>
+        <div class="adm" id="admList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Hosted models <span class="chip">delegated</span></label>
+      <div id="models"><div class="empty">loading…</div></div>
     </div>
 
     <div class="card">
       <div class="stats">
         <div class="stat"><div class="k">Earned <span class="chip">on-chain</span></div><div class="v green" id="earned">0.000000</div><div class="u">USDT · 0x…</div></div>
-        <div class="stat"><div class="k">Requests served</div><div class="v" id="served">0</div><div class="u">via Holepunch P2P</div></div>
+        <div class="stat"><div class="k">Metered settlements</div><div class="v" id="served">0</div><div class="u">signed receipts · P2P</div></div>
       </div>
     </div>
 
@@ -100,7 +124,24 @@
       if (s.providerPublicKey) $("provkey").textContent = s.providerPublicKey;
       if (s.walletAddress){ walletShort = s.walletAddress.slice(0,6)+"…"+s.walletAddress.slice(-4);
         document.querySelectorAll(".stat .u")[0].textContent = "USDT · " + walletShort; }
-      $("identity").textContent = "wallet " + (s.walletAddress||"") + (s.relayKey ? " · relay "+s.relayKey.slice(0,8)+"…" : "") + " · firewall on";
+      $("identity").textContent = "wallet " + (s.walletAddress||"") + (s.relayKey ? " · relay "+s.relayKey.slice(0,8)+"…" : "") + " · deposit-gated firewall";
+      if (s.hostedModels) $("models").innerHTML = s.hostedModels.map((m) =>
+        '<div class="model"><span class="nm">'+m.name+'</span><span class="tag '+m.modality+'">'+m.modality+'</span></div>').join("");
+    }
+  });
+
+  // ── deposit gate: admissions ──
+  const admitted = new Set();
+  es.addEventListener("gate", (e) => {
+    const g = JSON.parse(e.data);
+    if (g.phase === "closed") { $("gateMsg").textContent = g.detail || "firewall locked — deposit to enter"; }
+    else if (g.phase === "claim-submitted") { $("gateMsg").textContent = "Access claim received from " + (g.swarmKey?g.swarmKey.slice(0,12)+"…":"a buyer") + " — awaiting their on-chain deposit."; }
+    else if (g.phase === "waiting-confirmations") { $("gateMsg").textContent = "Deposit seen — confirming on-chain, then reopening the firewall…"; }
+    else if (g.phase === "admitted" && g.swarmKey) {
+      admitted.add(g.swarmKey);
+      $("gate").className = "gate open"; $("gateIc").textContent = "🔓";
+      $("gateTitle").textContent = "Firewall open."; $("gateMsg").textContent = admitted.size + " buyer key(s) admitted after confirmed deposit.";
+      $("admList").innerHTML = [...admitted].map((k)=>"✓ "+k.slice(0,20)+"… admitted").join("<br>");
     }
   });
   es.addEventListener("balance", (e) => {
@@ -112,10 +153,13 @@
     $("served").textContent = served;
     const jobs = $("jobs"); const empty = jobs.querySelector(".empty"); if (empty) empty.remove();
     const row = document.createElement("div"); row.className = "req";
-    const id2 = receipt.requestId.slice(0,2);
-    row.innerHTML = '<div class="l"><div class="ava">'+id2+'</div><div class="m"><b>'+receipt.generatedTokens+' tokens</b><br>req '+receipt.requestId.slice(0,8)+'…</div></div>'+
+    // LegReceipt (voice) carries modality/units/unitKind; SettlementReceipt (text) carries generatedTokens.
+    const work = receipt.modality
+      ? { ic: {stt:"🎧",llm:"🧠",tts:"🔊"}[receipt.modality] || "•", detail: receipt.units + " " + receipt.unitKind, tag: '<span class="mod">'+receipt.modality+' leg</span>' }
+      : { ic: receipt.requestId.slice(0,2), detail: receipt.generatedTokens + " tokens", tag: '<span class="mod">chat</span>' };
+    row.innerHTML = '<div class="l"><div class="ava">'+work.ic+'</div><div class="m"><b>'+work.detail+'</b> '+work.tag+'<br>req '+receipt.requestId.slice(0,8)+'…</div></div>'+
       '<div style="text-align:right"><div class="amt">+'+usdt(receipt.amountBaseUnits)+'</div>'+
-      '<a class="tx" target="_blank" href="'+receipt.explorerUrl+'">'+receipt.txHash.slice(0,10)+'… ↗</a></div>';
+      (receipt.txHash ? '<a class="tx" target="_blank" href="'+receipt.explorerUrl+'">'+receipt.txHash.slice(0,10)+'… ↗</a>' : '')+'</div>';
     jobs.prepend(row);
   });
 </script>

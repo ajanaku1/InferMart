@@ -1,0 +1,18 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="InferMart">
+  <defs>
+    <linearGradient id="im-grad" x1="24" y1="24" x2="232" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6B6BF5"/>
+      <stop offset="1" stop-color="#1ED0BB"/>
+    </linearGradient>
+  </defs>
+  <!-- app-icon tile -->
+  <rect x="8" y="8" width="240" height="240" rx="58" fill="url(#im-grad)"/>
+  <!-- P2P inference glyph: hollow buyer node, streamed tokens, filled seller node -->
+  <g fill="#FFFFFF" stroke="#FFFFFF">
+    <circle cx="84" cy="128" r="26" fill="none" stroke-width="13"/>
+    <circle cx="120" cy="128" r="5.5" stroke="none"/>
+    <circle cx="136" cy="128" r="5.5" stroke="none"/>
+    <circle cx="152" cy="128" r="5.5" stroke="none"/>
+    <circle cx="186" cy="128" r="24" stroke="none"/>
+  </g>
+</svg>

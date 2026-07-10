@@ -8,9 +8,18 @@
 import { completion, loadModel, LLAMA_3_2_1B_INST_Q4_0 } from "@qvac/sdk";
 import type { Message, MeterStats } from "@infermart/shared/protocol";
 
+/** Metering needs tokens; the audit log also wants TTFT, tokens/sec, and the backend device. */
+export interface InferenceResult extends MeterStats {
+  /** QVAC's requestId for this run — keys the provider-signed usage receipt. */
+  requestId: string;
+  timeToFirstToken?: number;
+  tokensPerSecond?: number;
+  backendDevice?: string;
+}
+
 export interface InferenceClient {
   modelId: string;
-  run(history: Message[], onToken: (t: string) => void): Promise<MeterStats>;
+  run(history: Message[], onToken: (t: string) => void): Promise<InferenceResult>;
 }
 
 /**
@@ -35,13 +44,17 @@ export async function connectToProvider(providerPublicKey: string, attempts = 5)
   }
 
   const id = modelId!;
-  async function run(history: Message[], onToken: (t: string) => void): Promise<MeterStats> {
+  async function run(history: Message[], onToken: (t: string) => void): Promise<InferenceResult> {
     const completionRun = completion({ modelId: id, history, stream: true });
     for await (const token of completionRun.tokenStream) onToken(token);
     const stats = (await completionRun.stats) ?? {};
     return {
+      requestId: completionRun.requestId,
       generatedTokens: stats.generatedTokens ?? 0,
       promptTokens: stats.promptTokens ?? 0,
+      timeToFirstToken: stats.timeToFirstToken,
+      tokensPerSecond: stats.tokensPerSecond,
+      backendDevice: stats.backendDevice,
     };
   }
 

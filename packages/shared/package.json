@@ -9,6 +9,10 @@
     "./metering": "./metering.ts",
     "./wdk": "./wdk.ts",
     "./dashboard-server": "./dashboard-server.ts",
-    "./env": "./env.ts"
+    "./env": "./env.ts",
+    "./audit": "./audit.ts",
+    "./receipts": "./receipts.ts",
+    "./receipt-signing": "./receipt-signing.js",
+    "./delegated-rpc": "./delegated-rpc.ts"
   }
 }

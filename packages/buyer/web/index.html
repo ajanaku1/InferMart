@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>InferMart · Buyer</title>
+<link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
 <style>
   :root{
     --bg:#f6f7fb;--card:#fff;--line:#e7eaf2;--ink:#1c2230;--ink-dim:#5a6478;--ink-faint:#97a0b4;
@@ -16,20 +17,28 @@
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
   header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--card);border-bottom:1px solid var(--line)}
   .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;letter-spacing:-.2px}
-  .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--indigo),var(--teal));box-shadow:0 6px 16px rgba(91,91,240,.3)}
+  .logo{width:30px;height:30px;border-radius:9px;box-shadow:0 6px 16px rgba(91,91,240,.3);flex-shrink:0}
   .brand small{color:var(--ink-faint);font-weight:500;font-size:12px}
+  .hdr-r{display:flex;align-items:center;gap:9px}
   .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:var(--teal-soft);color:var(--teal);font-weight:600;font-size:12.5px}
   .pill .d{width:7px;height:7px;border-radius:50%;background:var(--teal)}
   .pill.off{background:#fdecee;color:var(--red)} .pill.off .d{background:var(--red)}
-  .wrap{max-width:640px;margin:0 auto;padding:28px}
+  .pill.warn{background:#fff4e5;color:#9a5b07} .pill.warn .d{background:#9a5b07}
+  .pill.mono{font-family:var(--mono);font-size:11.5px}
+  .wrap{max-width:660px;margin:0 auto;padding:28px}
   h2{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);margin:0 0 4px}
   .lead{color:var(--ink-dim);margin:0 0 16px;font-size:13px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+  .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .card-h label{margin:0}
   label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-dim);margin-bottom:8px}
   textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px;font-family:var(--sans);font-size:14px;color:var(--ink);resize:none;background:#fcfcff}
   textarea:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 4px var(--indigo-soft)}
   .btn{margin-top:12px;width:100%;border:0;border-radius:12px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;background:linear-gradient(135deg,var(--indigo),#7a6bff);color:#fff;box-shadow:0 8px 18px rgba(91,91,240,.28)}
+  .btn.teal{background:linear-gradient(135deg,var(--teal),#37cbb0);box-shadow:0 8px 18px rgba(19,182,164,.28)}
   .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn.sm{width:auto;margin:0;padding:9px 15px;font-size:13px}
+  .row2{display:flex;gap:10px}
   .hint{margin-top:10px;font-size:12px;color:var(--ink-faint);text-align:center}
   .stream{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:15px;font-size:14px;line-height:1.6;min-height:74px;white-space:pre-wrap}
   .cur{color:var(--indigo);font-weight:700;animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
@@ -48,91 +57,219 @@
   .receipt.show{display:block}
   .receipt.settled{background:var(--teal-soft);color:#0c7d70} .receipt.rejected{background:#fff4e5;color:#9a5b07}
   .receipt.failed{background:#fdecee;color:#a32437}
-  .airplane{display:flex;gap:13px;align-items:center;background:linear-gradient(135deg,#fff7ec,#fef1f2);border:1px solid #fde2c4;border-radius:14px;padding:15px 17px}
-  .airplane .ic{font-size:22px}.airplane .t{font-size:13px;color:#8a5a12}.airplane .t b{color:#5a3a08}
+  /* voice pipeline legs */
+  .leg{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .leg:last-child{border-bottom:0}
+  .leg .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--indigo-soft)}
+  .leg.stt .ic{background:#eef0ff}.leg.llm .ic{background:#e9f6ff}.leg.tts .ic{background:var(--teal-soft)}
+  .leg .body{flex:1;min-width:0}
+  .leg .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .leg .name{font-weight:700;font-size:13px}
+  .leg .name small{color:var(--ink-faint);font-weight:500}
+  .leg .ph{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#eceef6;color:var(--ink-faint);white-space:nowrap;font-family:var(--mono)}
+  .leg .ph.running{background:var(--indigo-soft);color:var(--indigo)}
+  .leg .ph.verifying{background:#e9f6ff;color:#0a7ea4}
+  .leg .ph.done{background:var(--teal-soft);color:#0c7d70}
+  .leg .ph.failed{background:#fdecee;color:var(--red)}
+  .leg .txt{font-size:12.5px;color:var(--ink-dim);margin-top:4px;white-space:pre-wrap;word-break:break-word}
+  .leg .meta{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap}
+  .leg .meta .ok{color:var(--teal)} .leg .meta .amt{color:var(--green);font-weight:600}
+  .leg .meta a{color:var(--indigo);text-decoration:none}
+  audio{width:100%;margin-top:12px;height:38px}
+  /* catalog */
+  .cat{max-height:190px;overflow-y:auto;margin:-4px -4px 0;padding:0 4px}
+  .cat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .cat-row:last-child{border-bottom:0}
+  .cat-row .nm{font-family:var(--mono);font-size:11.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
+  .tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+  .tag.stt{background:#eef0ff;color:var(--indigo)}.tag.llm{background:#e9f6ff;color:#0a7ea4}
+  .tag.tts{background:var(--teal-soft);color:#0c7d70}.tag.other{background:#eceef6;color:var(--ink-faint)}
+  .host{font-size:10.5px;color:var(--teal);font-weight:700;margin-left:6px}
+  /* gate */
+  .gate{display:flex;gap:13px;align-items:flex-start;background:linear-gradient(135deg,#fff7ec,#fef1f2);border:1px solid #fde2c4;border-radius:14px;padding:15px 17px;margin-bottom:18px}
+  .gate.open{background:linear-gradient(135deg,#eefaf6,#eef0ff);border-color:#c4ecdf}
+  .gate .ic{font-size:22px}.gate .t{font-size:13px;color:#8a5a12}.gate .t b{color:#5a3a08}
+  .gate.open .t{color:#0c7d70}.gate.open .t b{color:#0a5c52}
+  .steps{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+  .step{font-size:10.5px;font-family:var(--mono);padding:2px 8px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink-faint)}
+  .step.done{background:var(--teal-soft);color:#0c7d70;border-color:#c4ecdf}
+  .step.active{background:var(--indigo-soft);color:var(--indigo);border-color:#d3d6ff}
   footer{text-align:center;padding:22px;color:var(--ink-faint);font-size:12px}
   .addr{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
 </style>
 </head>
 <body>
   <header>
-    <div class="brand"><span class="logo"></span> InferMart <small>// buyer · rent a peer's AI</small></div>
-    <span class="pill" id="link"><span class="d"></span> <span id="linkText">connecting…</span></span>
+    <div class="brand"><svg class="logo" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="24" y1="24" x2="232" y2="232" gradientUnits="userSpaceOnUse"><stop stop-color="#5b5bf0"/><stop offset="1" stop-color="#13b6a4"/></linearGradient></defs><rect x="8" y="8" width="240" height="240" rx="58" fill="url(#lg)"/><g fill="#fff"><circle cx="84" cy="128" r="26" fill="none" stroke="#fff" stroke-width="13"/><circle cx="120" cy="128" r="5.5"/><circle cx="136" cy="128" r="5.5"/><circle cx="152" cy="128" r="5.5"/><circle cx="186" cy="128" r="24"/></g></svg> InferMart <small>// buyer · rent a peer's AI</small></div>
+    <div class="hdr-r">
+      <span class="pill mono warn" id="beat" title="provider heartbeat"><span class="d"></span> <span id="beatText">—</span></span>
+      <span class="pill" id="link"><span class="d"></span> <span id="linkText">connecting…</span></span>
+    </div>
   </header>
 
   <div class="wrap">
     <h2>You're the buyer</h2>
     <p class="lead">No model on this device. Borrow a peer's, pay only for what you use. <span class="addr" id="addr"></span></p>
 
-    <div class="card">
-      <label>Ask anything</label>
-      <textarea id="prompt" rows="2">In one sentence, what is peer-to-peer compute?</textarea>
-      <button class="btn" id="send" disabled>Connecting to provider…</button>
-      <div class="hint">You're charged in USDT only after a successful answer.</div>
+    <div class="gate" id="gate">
+      <span class="ic" id="gateIc">🔒</span>
+      <div class="t"><b id="gateTitle">Firewall locked.</b> <span id="gateMsg">Your on-chain USDT deposit opens the provider's firewall — no key exchanged out of band.</span>
+        <div class="steps" id="gateSteps">
+          <span class="step" data-s="claim-submitted">claim</span>
+          <span class="step" data-s="deposit-sent">deposit</span>
+          <span class="step" data-s="waiting-confirmations">confirming</span>
+          <span class="step" data-s="admitted">admitted</span>
+        </div>
+      </div>
     </div>
 
     <div class="card">
-      <label>Answer <span class="live" id="live"><span class="d"></span> streaming from a peer</span></label>
-      <div class="stream" id="stream">—</div>
+      <div class="card-h"><label>🎙️ Voice pipeline <small style="font-weight:500;color:var(--ink-faint)">— three QVAC modalities, one P2P link</small></label></div>
+      <p class="lead" style="margin:-4px 0 12px">Speak (or use the sample), and the seller runs Whisper → Llama → Supertonic — each leg metered, receipt-verified, and settled in USDT on its own.</p>
+      <div class="row2">
+        <button class="btn teal sm" id="rec" style="flex:1" disabled>● Record</button>
+        <button class="btn sm" id="sample" style="flex:1;background:linear-gradient(135deg,#7a6bff,#5b5bf0)" disabled>Use sample note</button>
+      </div>
+      <div id="legs" style="margin-top:14px"></div>
+      <audio id="reply" controls style="display:none"></audio>
+    </div>
+
+    <div class="card">
+      <label>💬 Or just ask (text)</label>
+      <textarea id="prompt" rows="2">In one sentence, what is peer-to-peer compute?</textarea>
+      <button class="btn" id="send" disabled>Connecting to provider…</button>
+      <div class="hint">Charged in USDT only after a successful, heartbeat-checked answer.</div>
+      <div class="stream" id="stream" style="margin-top:12px">—</div>
       <div class="receipt" id="receipt"></div>
     </div>
 
     <div class="card">
+      <div class="card-h"><label>🛰️ Market catalog <small style="font-weight:500;color:var(--ink-faint)">— live from the QVAC registry</small></label><span class="pill mono" id="catCount" style="background:#eef0ff;color:var(--indigo)">0 models</span></div>
+      <div class="cat" id="cat"><div class="hint">querying registry…</div></div>
+    </div>
+
+    <div class="card">
       <div class="stats">
-        <div class="stat"><div class="k">This answer</div><div class="v indigo" id="cost">0.000000</div><div class="u" id="costSub">USDT</div></div>
+        <div class="stat"><div class="k">Last leg / answer</div><div class="v indigo" id="cost">0.000000</div><div class="u" id="costSub">USDT</div></div>
         <div class="stat"><div class="k">Spent this session</div><div class="v" id="spent">0.000000</div><div class="u" id="cap">of 1.000000 cap</div><div class="bar"><i id="spendBar" style="width:0%"></i></div></div>
       </div>
     </div>
-
-    <div class="airplane"><span class="ic">✈️</span><div class="t"><b>Cut your Wi-Fi mid-answer.</b> The request rides the local peer link, not the cloud — there's nothing to disconnect from.</div></div>
   </div>
-  <footer>InferMart — idle on-device inference, settled in real testnet USDT · QVAC · WDK · Holepunch</footer>
+  <footer>InferMart — delegated multi-modal inference, settled in real testnet USDT · QVAC · WDK · Holepunch</footer>
 
 <script>
   const $ = (id) => document.getElementById(id);
   const usdt = (base) => (Number(base) / 1e6).toFixed(6);
+  const short = (h,n=8) => h ? h.slice(0,n)+"…" : "";
   let pricePer1k = 1000, capBaseUnits = 1000000;
+  const LEG_ICON = { stt:"🎧", llm:"🧠", tts:"🔊" };
+  const LEG_NAME = { stt:"Transcribe", llm:"Reason", tts:"Speak" };
+  const LEG_SUB  = { stt:"Whisper · per audio-second", llm:"Llama · per token", tts:"Supertonic · per character" };
 
   const es = new EventSource("/events");
+
   es.addEventListener("status", (e) => {
     const s = JSON.parse(e.data);
     if (s.capBaseUnits) capBaseUnits = s.capBaseUnits;
     if (s.pricePer1k) pricePer1k = s.pricePer1k;
-    if (s.buyerAddress) $("addr").textContent = "wallet " + s.buyerAddress.slice(0,6) + "…" + s.buyerAddress.slice(-4);
-    if (s.phase === "ready") { $("send").disabled = false; $("send").textContent = "Send over P2P"; $("linkText").textContent = "P2P link ready"; }
-    else if (s.phase === "connecting") $("linkText").textContent = "connecting…";
+    if (s.buyerAddress) $("addr").textContent = "wallet " + short(s.buyerAddress,6) + s.buyerAddress.slice(-4);
+    if (s.phase === "ready") {
+      $("send").disabled = false; $("send").textContent = "Send over P2P";
+      $("rec").disabled = false; $("sample").disabled = false;
+      $("linkText").textContent = "P2P link ready"; $("link").className = "pill";
+    } else if (s.phase === "connecting") $("linkText").textContent = "connecting…";
   });
+
+  // ── deposit gate ──
+  es.addEventListener("gate", (e) => {
+    const g = JSON.parse(e.data);
+    const order = ["claim-submitted","deposit-sent","waiting-confirmations","admitted"];
+    const idx = order.indexOf(g.phase);
+    document.querySelectorAll("#gateSteps .step").forEach((el) => {
+      const i = order.indexOf(el.dataset.s);
+      el.className = "step" + (i < idx ? " done" : i === idx ? " active" : "");
+    });
+    if (g.phase === "admitted") {
+      $("gate").className = "gate open"; $("gateIc").textContent = "🔓";
+      $("gateTitle").textContent = "Firewall open."; $("gateMsg").textContent = "Deposit confirmed on-chain — the provider added your key to its allowlist automatically.";
+      document.querySelectorAll("#gateSteps .step").forEach((el)=>el.classList.add("done"));
+    } else if (g.phase === "deposit-sent") { $("gateMsg").textContent = "Deposit sent" + (g.detail?" ("+g.detail+")":"") + " — waiting for confirmations…"; }
+    else if (g.phase === "waiting-confirmations") { $("gateMsg").textContent = "Waiting for the seller to confirm your deposit on-chain…"; }
+  });
+
+  // ── heartbeat ──
+  es.addEventListener("heartbeat", (e) => {
+    const h = JSON.parse(e.data);
+    if (h.alive) { $("beat").className = "pill mono"; $("beatText").textContent = "♥ " + h.latencyMs + "ms"; }
+    else { $("beat").className = "pill mono off"; $("beatText").textContent = "no beat"; }
+  });
+
+  // ── voice pipeline legs ──
+  const legEls = {};
+  function ensureLeg(voiceId, leg) {
+    const key = voiceId + ":" + leg;
+    if (legEls[key]) return legEls[key];
+    // fresh voice note → clear previous legs
+    if (!Object.keys(legEls).some((k)=>k.startsWith(voiceId+":"))) { $("legs").innerHTML = ""; for (const k in legEls) delete legEls[k]; }
+    const el = document.createElement("div"); el.className = "leg " + leg;
+    el.innerHTML = '<div class="ic">'+LEG_ICON[leg]+'</div><div class="body"><div class="top">'+
+      '<div class="name">'+LEG_NAME[leg]+' <small>'+LEG_SUB[leg]+'</small></div><div class="ph">queued</div></div>'+
+      '<div class="txt"></div><div class="meta"></div></div>';
+    $("legs").appendChild(el);
+    return legEls[key] = { ph: el.querySelector(".ph"), txt: el.querySelector(".txt"), meta: el.querySelector(".meta") };
+  }
+  es.addEventListener("voice", (e) => {
+    const v = JSON.parse(e.data);
+    const el = ensureLeg(v.voiceId, v.leg);
+    el.ph.textContent = v.phase; el.ph.className = "ph " + v.phase;
+    if (v.text) el.txt.textContent = (v.leg==="stt"?"“":"")+v.text+(v.leg==="stt"?"”":"");
+    const bits = [];
+    if (v.phase === "heartbeat" && v.latencyMs!=null) bits.push("♥ "+v.latencyMs+"ms");
+    if (v.receiptVerified) bits.push('<span class="ok">✓ receipt verified</span>');
+    if (v.usageReceipt) bits.push(v.usageReceipt.units+" "+v.usageReceipt.unitKind);
+    if (v.settlement && (v.settlement.status==="settled"||v.settlement.status==="pending")) {
+      bits.push('<span class="amt">+'+usdt(v.settlement.amountBaseUnits)+' USDT</span>');
+      if (v.settlement.txHash) bits.push('<a target="_blank" href="'+v.settlement.explorerUrl+'">'+short(v.settlement.txHash,10)+' ↗</a>');
+      $("cost").textContent = usdt(v.settlement.amountBaseUnits); $("costSub").textContent = "USDT · "+v.leg+" leg";
+    }
+    if (v.error) bits.push('<span style="color:var(--red)">'+v.error+'</span>');
+    if (bits.length) el.meta.innerHTML = bits.join('<span style="opacity:.4">·</span>');
+  });
+
+  // ── catalog ──
+  es.addEventListener("catalog", (e) => {
+    const { entries } = JSON.parse(e.data);
+    $("catCount").textContent = entries.length + " models";
+    $("cat").innerHTML = entries.map((c) =>
+      '<div class="cat-row"><span class="nm" title="'+c.name+'">'+c.name+(c.hosted?'<span class="host">● hosted</span>':'')+
+      '</span><span class="tag '+c.modality+'">'+c.modality+'</span></div>').join("");
+  });
+
+  // ── text chat (Phase 1) ──
   es.addEventListener("request", (e) => {
-    const r = JSON.parse(e.data);
-    $("stream").textContent = "";
     $("stream").innerHTML = '<span class="cur">▌</span>';
-    $("live").classList.add("on");
-    $("receipt").classList.remove("show");
-    $("send").disabled = true;
+    $("live").classList.add("on"); $("receipt").classList.remove("show"); $("send").disabled = true;
   });
   es.addEventListener("chunk", (e) => {
     const c = JSON.parse(e.data);
-    const cur = $("stream").querySelector(".cur");
-    if (cur) cur.remove();
+    const cur = $("stream").querySelector(".cur"); if (cur) cur.remove();
     $("stream").append(document.createTextNode(c.token));
-    const span = document.createElement("span"); span.className="cur"; span.textContent="▌";
-    $("stream").append(span);
+    const span = document.createElement("span"); span.className="cur"; span.textContent="▌"; $("stream").append(span);
   });
   es.addEventListener("done", (e) => {
     const d = JSON.parse(e.data);
-    $("live").classList.remove("on");
     const cur = $("stream").querySelector(".cur"); if (cur) cur.remove();
     const cost = Math.ceil((d.stats.generatedTokens * pricePer1k) / 1000);
-    $("cost").textContent = usdt(cost);
-    $("costSub").textContent = "USDT · " + d.stats.generatedTokens + " tokens";
+    $("cost").textContent = usdt(cost); $("costSub").textContent = "USDT · " + d.stats.generatedTokens + " tokens";
   });
   es.addEventListener("receipt", (e) => {
     const r = JSON.parse(e.data);
     const box = $("receipt"); box.className = "receipt show " + r.status;
     if (r.status === "settled")
-      box.innerHTML = "✓ paid " + usdt(r.amountBaseUnits) + " USDT · <a class='tx' target='_blank' href='" + r.explorerUrl + "'>" + r.txHash.slice(0,10) + "… ↗</a>";
+      box.innerHTML = "✓ paid " + usdt(r.amountBaseUnits) + " USDT · <a class='tx' target='_blank' href='" + r.explorerUrl + "'>" + short(r.txHash,10) + " ↗</a>";
     else if (r.status === "rejected") box.textContent = "✋ blocked by session cap — not charged. " + (r.reason||"");
-    else box.textContent = "⚠ settlement failed — not charged. " + (r.reason||"");
+    else if (r.status === "failed") box.textContent = "⚠ settlement failed — not charged. " + (r.reason||"");
+    else return;
     $("send").disabled = false;
   });
   es.addEventListener("spend", (e) => {
@@ -142,11 +279,42 @@
     $("spendBar").style.width = Math.min(100, (s.spentBaseUnits / s.capBaseUnits) * 100) + "%";
   });
 
+  // ── actions ──
   $("send").addEventListener("click", async () => {
     const prompt = $("prompt").value.trim(); if (!prompt) return;
     $("send").disabled = true; $("send").textContent = "Sending…";
-    await fetch("/ask", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({ prompt }) });
+    const r = await fetch("/ask", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({ prompt }) }).then(x=>x.json());
+    if (r.error) { $("receipt").className="receipt show failed"; $("receipt").textContent = r.error; $("send").disabled=false; }
     $("send").textContent = "Send over P2P";
+  });
+
+  async function runVoice(body) {
+    $("rec").disabled = true; $("sample").disabled = true; $("reply").style.display = "none";
+    const res = await fetch("/voice", { method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify(body) }).then(x=>x.json());
+    if (res.replyWavBase64) {
+      $("reply").src = "data:audio/wav;base64," + res.replyWavBase64; $("reply").style.display = "block"; $("reply").play().catch(()=>{});
+    }
+    $("rec").disabled = false; $("sample").disabled = false;
+    $("rec").textContent = "● Record";
+  }
+  $("sample").addEventListener("click", () => runVoice({ useSample: true }));
+
+  // Mic capture → WebM → server decodes to f32le via ffmpeg.
+  let mediaRec, chunks = [];
+  $("rec").addEventListener("click", async () => {
+    if (mediaRec && mediaRec.state === "recording") { mediaRec.stop(); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRec = new MediaRecorder(stream); chunks = [];
+      mediaRec.ondataavailable = (ev) => chunks.push(ev.data);
+      mediaRec.onstop = async () => {
+        stream.getTracks().forEach((t)=>t.stop());
+        const blob = new Blob(chunks, { type: mediaRec.mimeType });
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(await blob.arrayBuffer())));
+        await runVoice({ audioBase64: b64 });
+      };
+      mediaRec.start(); $("rec").textContent = "■ Stop & send";
+    } catch { $("rec").textContent = "● Record"; alert("Microphone unavailable — use the sample note instead."); }
   });
 </script>
 </body>

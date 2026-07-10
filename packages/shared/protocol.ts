@@ -63,6 +63,63 @@ export interface SettlementReceipt {
   reason?: string;
 }
 
+// ── Phase 2: voice pipeline, signed receipts, market, deposit gate ──
+
+import type { Modality, UnitKind, SignedUsageReceipt } from "./receipts.ts";
+
+/** One leg of the voice pipeline as rendered by the dashboards. */
+export interface VoiceLegUpdate {
+  v: typeof PROTOCOL_VERSION;
+  /** Correlates all legs of one voice note. */
+  voiceId: string;
+  /** The QVAC requestId of this leg (keys the provider-signed receipt). */
+  requestId: string;
+  leg: Modality;
+  phase: "heartbeat" | "running" | "verifying" | "settling" | "done" | "failed" | "skipped";
+  /** Transcript (stt) or reply text (llm) once available. */
+  text?: string;
+  /** Heartbeat round-trip in ms, when phase === "heartbeat" succeeded. */
+  latencyMs?: number;
+  /** The provider-signed usage receipt, once fetched and verified. */
+  usageReceipt?: SignedUsageReceipt;
+  receiptVerified?: boolean;
+  /** Per-leg settlement outcome. */
+  settlement?: LegReceipt;
+  error?: string;
+}
+
+/** Per-leg settlement receipt (Phase-2 sibling of SettlementReceipt). */
+export interface LegReceipt {
+  v: typeof PROTOCOL_VERSION;
+  requestId: string;
+  modality: Modality;
+  unitKind: UnitKind;
+  units: number;
+  amountBaseUnits: number;
+  status: SettlementStatus;
+  txHash?: string;
+  chain?: string;
+  explorerUrl?: string;
+  reason?: string;
+}
+
+/** One row of the live market catalog (from the QVAC model registry). */
+export interface CatalogEntry {
+  name: string;
+  src: string;
+  modality: Modality | "other";
+  hosted: boolean;
+}
+
+/** Deposit-gate progress, as seen by either side. */
+export interface GateUpdate {
+  phase: "closed" | "claim-submitted" | "deposit-sent" | "waiting-confirmations" | "admitted";
+  swarmKey?: string;
+  senderAddress?: string;
+  txHash?: string;
+  detail?: string;
+}
+
 /** SSE event names shared by both dashboards — one vocabulary across the app. */
 export const SSE_EVENTS = {
   request: "request",
@@ -70,6 +127,10 @@ export const SSE_EVENTS = {
   receipt: "receipt",
   balance: "balance",
   status: "status",
+  voice: "voice",
+  catalog: "catalog",
+  heartbeat: "heartbeat",
+  gate: "gate",
 } as const;
 
 export type SseEvent = (typeof SSE_EVENTS)[keyof typeof SSE_EVENTS];

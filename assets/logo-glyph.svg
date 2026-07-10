@@ -1,0 +1,16 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="InferMart glyph">
+  <defs>
+    <linearGradient id="im-glyph" x1="48" y1="100" x2="210" y2="156" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6B6BF5"/>
+      <stop offset="1" stop-color="#1ED0BB"/>
+    </linearGradient>
+  </defs>
+  <!-- transparent background; mark in brand gradient for use on light/dark surfaces -->
+  <g fill="url(#im-glyph)" stroke="url(#im-glyph)">
+    <circle cx="84" cy="128" r="26" fill="none" stroke-width="13"/>
+    <circle cx="120" cy="128" r="5.5" stroke="none"/>
+    <circle cx="136" cy="128" r="5.5" stroke="none"/>
+    <circle cx="152" cy="128" r="5.5" stroke="none"/>
+    <circle cx="186" cy="128" r="24" stroke="none"/>
+  </g>
+</svg>

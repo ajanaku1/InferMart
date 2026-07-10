@@ -7,7 +7,7 @@ import { readFile } from "node:fs/promises";
 import { join, extname } from "node:path";
 
 type PostHandler = (body: unknown) => unknown | Promise<unknown>;
-const MIME: Record<string, string> = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript" };
+const MIME: Record<string, string> = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png" };
 
 export interface DashboardServer {
   /** Push an SSE event to every connected dashboard. Also retained for late joiners. */

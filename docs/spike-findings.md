@@ -87,3 +87,78 @@ Global npm registry is the mirror `registry.npmmirror.com`, which has **not** sy
 ## "Buyer downloads weights?", still open
 
 Couldn't measure: the connection didn't complete, and on one machine both peers share `~/.qvac` cache so `onProgress` bytes would read ~0 regardless. Resolve once a real connection lands (two devices, or separate `cacheDirectory` per peer). Mitigation stands: 1B-Q4 keeps the "buyer offloads compute" claim valid in the worst case.
+
+---
+
+# Phase-2 Spike Findings (2026-07-10)
+
+Same rig as Day 0: macOS (darwin 24.6.0), Node 25, `@qvac/sdk@0.13.5`, single machine, blind relay.
+
+## Spike A: delegated `transcribe` + `textToSpeech`: ✅ YES, via a protocol-level extension
+
+**The SDK's public client cannot delegate these calls.** In 0.13.5 the consumer-side RPC
+registry (`dist/server/rpc/handler-registry.js`) wires `delegatedHandler`s for only five
+request types: `loadModel`, `completionStream`, `heartbeat`, `unloadModel`, `cancel`.
+Calling `transcribe`/`textToSpeech` on a delegated modelId throws
+`Model "…" is a delegated model and cannot be accessed directly`.
+
+**But the provider serves them anyway.** `startQVACProvider`'s inbound connection handler
+(`provideHandler/proxy.js`) proxies *every* request type generically through
+`handleRequest`, dispatching to local plugin handlers. The gap is purely consumer-side
+routing, so we close it ourselves by speaking the SDK's own wire protocol:
+
+- `hyperdht` connect to the provider public key (same relay, same firewall path),
+- `bare-rpc` over the connection (works fine under Node; pure JS),
+- zod-validated JSON frames, built with the SDK's own `loadModelOptionsToRequestSchema`,
+- streaming replies arrive as NDJSON on `req.createResponseStream()`.
+
+Verified live (`packages/buyer/spike2-raw-rpc.ts` against `packages/seller/spike2-provider.ts`):
+
+```
+remote loadModel whisper-tiny  → {"success":true,"modelId":"727845ffedb0ae5f"}
+raw delegated transcript       → "would as peer to peer compute as a briefly."
+stt stats                      → audioDuration: 2597ms, totalTokens: 11   ← per-audio-second meter
+remote loadModel supertonic    → b2bba0a2bc01ebce
+raw delegated textToSpeech     → 161,798 samples (3.67s audio), stats.audioDuration present
+```
+
+**Decisions:**
+- Voice pipeline legs run over this raw channel; LLM completions keep using the SDK's
+  built-in `loadModel({delegate})` + `completion` (fully supported there).
+- Whisper input must be raw **f32le 16kHz mono** matching the model's `audio_format`
+  (`{type:"base64"}` audioChunk); WAV headers make byte counts non-multiple-of-4.
+- Upstream issue candidates found on the way:
+  1. (Known, Day-0) GGUF GPU default produces garbage logits on non-GPU hosts.
+  2. A malformed `transcribe` audio buffer (length % 4 ≠ 0) **permanently poisons the
+     whisper processing queue**: every subsequent request on that model fails with the
+     same error until the provider restarts. Repro is trivial; candidate for the filing.
+  3. Missing consumer-side `delegatedHandler`s for `transcribe`/`textToSpeech`/`pluginInvoke`
+     (this spike's whole raison d'être; worth reporting as a gap/feature request).
+
+## Spike B: custom `definePlugin` in the provider runtime: ✅ YES, via bundleSdk
+
+Custom plugins can't be injected at runtime from the Node host (the `plugins()` factory
+registers into the host process, not the worker). The supported path is a **custom worker
+bundle**: `bundleSdk({configPath})` from `@qvac/sdk/commands` reads a config whose
+`plugins` array mixes builtin specifiers with custom module paths ending in `/plugin`,
+generates `qvac/worker.entry.mjs`, and the host picks it up via `QVAC_WORKER_PATH`
+(per-process: the seller runs the custom worker, the buyer keeps the default).
+
+Verified live (`packages/seller/spike-metering-plugin/` + `packages/buyer/spike2-plugin-invoke.ts`):
+
+```
+remote loadModel {modelType:"infermart-metering"} → {"success":true,"modelId":"2b5ee3b0f0f0946b"}
+remote pluginInvoke echo                          → {"nonce":"…","countedAt":1,"runtime":"bare"}
+```
+
+`runtime:"bare"` confirms the handler executed inside the provider's Bare worker.
+Gotchas that cost time, so they never recur:
+- plugin `addonPackage` must be a non-empty string even if no native addon is used;
+- custom specifier resolves relative to `qvac/worker.entry.mjs` → use
+  `../packages/seller/<name>/plugin` and put code in `plugin/index.js`;
+- remote consumers reach the plugin via raw-channel `pluginInvoke` (the SDK client's
+  `invokePlugin` has no delegated route, the same consumer-side gap as Spike A).
+
+**Decision:** the signed-receipt metering plugin is real and provider-side (no wrapper
+fallback needed). It registers in the seller's worker via the custom bundle; the buyer
+fetches signed receipts over the raw channel.

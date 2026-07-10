@@ -10,6 +10,7 @@ node_modules/
 .spike/
 .qvac/
 *.log
+logs/
 
 # Models (large binaries, fetched at runtime)
 *.gguf
@@ -20,9 +21,30 @@ dist/
 build/
 artifacts/
 cache/
+# generated provider worker bundle (npm run bundle-worker)
+qvac/
 
 # Local tooling / editor
 .claude/
 ai/
 .vercel
 .DS_Store
+proposals/
+
+# Video files (renders + screen recordings) — never commit
+*.mp4
+*.webm
+*.mov
+*.m4v
+video/out/
+video/node_modules/
+
+# Landing deploy artifacts
+landing/demo.mp4
+landing/.vercel/
+.vercel/
+
+# build-prompt scaffolding (local only)
+Goal.md
+prompt.md
+plan.md
