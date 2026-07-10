@@ -36,8 +36,7 @@ proposals/
 *.webm
 *.mov
 *.m4v
-video/out/
-video/node_modules/
+video/
 
 # Landing deploy artifacts
 landing/demo.mp4
@@ -48,3 +47,4 @@ landing/.vercel/
 Goal.md
 prompt.md
 plan.md
+submission.md
