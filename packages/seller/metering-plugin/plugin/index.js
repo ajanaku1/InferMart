@@ -20,6 +20,7 @@ import process from "bare-process";
 import { definePlugin, defineHandler } from "@qvac/sdk/plugin-utils";
 import { getPlugin } from "@qvac/sdk/plugins";
 import { signReceipt } from "../../../shared/receipt-signing.js";
+import { f32leViolation } from "../../../shared/audio-guard.js";
 
 /** requestId → { modality, modelId, units, unitKind } — for handlers that carry a requestId. */
 const usage = new Map();
@@ -51,9 +52,24 @@ function wrapStreamingHandler(handlerDef, onFrame) {
   };
 }
 
+/**
+ * Reject malformed f32le audio BEFORE it reaches the model's processing queue
+ * (upstream tetherto/qvac#3221: one bad buffer wedges Whisper until restart).
+ * Only the offending request fails; every other client keeps working.
+ */
+function guardTranscribeAudio(handlerDef) {
+  const original = handlerDef.handler;
+  handlerDef.handler = async function* (request, inputStream) {
+    const reason = f32leViolation(request.audioChunk, request.audio_format);
+    if (reason) throw new Error(`rejected before transcription: ${reason}`);
+    yield* original(request, inputStream);
+  };
+}
+
 function installMeters() {
   const whisper = getPlugin("whispercpp-transcription");
   if (whisper?.handlers?.transcribe) {
+    guardTranscribeAudio(whisper.handlers.transcribe);
     wrapStreamingHandler(whisper.handlers.transcribe, (request, frame) => {
       if (!frame.done) return;
       record(request.requestId, {
