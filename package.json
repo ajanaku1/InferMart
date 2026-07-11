@@ -22,6 +22,9 @@
     "deploy-usdt": "node scripts/deploy-usdt.ts",
     "verify-settlement": "node scripts/verify-settlement.ts",
     "demo": "bash scripts/demo.sh",
+    "quickstart": "bash scripts/quickstart.sh",
+    "deploy-escrow": "node scripts/deploy-escrow.ts",
+    "verify-escrow": "node scripts/verify-escrow.ts",
     "bundle-worker": "node -e \"import('@qvac/sdk/commands').then(m=>m.bundleSdk({projectRoot:process.cwd(),configPath:'./packages/seller/qvac.provider.config.json'})).then(r=>console.log('worker bundle:',r.bundlePath))\""
   },
   "dependencies": {

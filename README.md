@@ -11,7 +11,7 @@ Rent a neighbour's spare AI over an encrypted P2P link and pay per unit of work 
 [![QVAC](https://img.shields.io/badge/QVAC-delegated%20P2P-5b5bf0)](https://docs.qvac.tether.io/)
 [![WDK](https://img.shields.io/badge/WDK-USDT%20settlement-13b6a4)](https://docs.wdk.tether.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-39_passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-52_passing-brightgreen)]()
 
 ![InferMart dashboards](docs/images/hero.png)
 
@@ -95,6 +95,29 @@ The money path (receipts in `packages/shared/receipts.ts`, per-modality metering
 
 See [docs/architecture.md](docs/architecture.md) and [docs/spike-findings.md](docs/spike-findings.md) for the full design and the de-risking notes.
 
+## Design choices
+
+**Payment is bound to a signed receipt, never inferred from a balance change.** A tempting shortcut in P2P payment systems is for the seller to poll its wallet and treat any balance increase as "the buyer paid". That is race-prone the moment two buyers pay at once, and it proves nothing about which request was paid for. InferMart does not do this for billing: the provider counts usage inside its own worker, signs a receipt over the exact request (`requestId`, modality, units), and the buyer verifies that signature before settling. Every transfer traces to one receipt for one request. The only balance-watching in the system is the access deposit that opens the firewall, and that grants entry; it never bills work.
+
+**Each modality is priced in its own unit.** Transcription is billed per audio-second, chat per token, speech per character. Flattening all three into one per-token price would systematically misprice two of them; a seller running Whisper does not do "tokens" of work.
+
+**The seller believes the chain, not the buyer.** Payment confirmation on the seller side is its own on-chain balance read, so the number on the seller's dashboard is what the chain says rather than a message a counterparty sent.
+
+## Receipt-anchored escrow
+
+The receipts also anchor an on-chain payment channel, [`contracts/InferMartEscrow.sol`](contracts/InferMartEscrow.sol), deployed on Sepolia at [`0x22959bbE…A32D`](https://sepolia.etherscan.io/address/0x22959bbE95A9Ba130A29dfc8D7ff941e39B0A32D). The buyer deposits once per seller. After each leg it verifies the provider-signed receipt, then signs an EIP-712 voucher whose `receiptHash` commits to that exact signed receipt, and the seller redeems the latest voucher for the cumulative amount. Every on-chain claim is traceable to one provider-signed receipt; nothing is inferred from a balance change.
+
+Three properties worth naming. Claims are relay-friendly: anyone may submit a voucher, but the contract only ever pays the channel's seller, so the seller needs no ETH for gas. Channels carry an epoch that increments on refund, so a voucher from a closed channel can never replay. And the buyer's exit runs through a challenge window, giving the seller an hour to land its final voucher before the remainder returns.
+
+Prove it end to end with real transactions (a claim from a live run: [`0x8215cde9…`](https://sepolia.etherscan.io/tx/0x8215cde99fd565cb6b4890d3f2468241ca2928d3c0e1f3f1e9a00be36b8e6266)):
+
+```bash
+npm run deploy-escrow   # compile + deploy, saves ESCROW_CONTRACT to .env
+npm run verify-escrow   # fund channel → verify receipt → sign voucher → claim → check the payout
+```
+
+The voucher math is mirrored in [`packages/shared/escrow-voucher.ts`](packages/shared/escrow-voucher.ts) and tested in [`tests/escrow-voucher.test.ts`](tests/escrow-voucher.test.ts), so the buyer refuses to sign anything the contract would reject. The demo's default settlement is still one direct transfer per leg; the escrow is the channel mode for sessions with many small legs, deployed and provable rather than wired into the dashboards. Testnet code: tested end to end, not audited.
+
 ## Running locally
 
 Prerequisites: Node 22 or newer, `ffmpeg` on PATH (for voice decoding), on macOS or Linux.
@@ -103,6 +126,9 @@ Prerequisites: Node 22 or newer, `ffmpeg` on PATH (for voice decoding), on macOS
 git clone https://github.com/ajanaku1/InferMart.git
 cd InferMart
 npm install --registry=https://registry.npmjs.org   # QVAC/WDK live on the official registry
+
+# One command does all of the below (checks, wallets, faucet wait, deploy, proof, launch):
+npm run quickstart
 
 # 1. Create the buyer and seller wallets (secrets go to a gitignored .env)
 npm run fund-wallets
@@ -128,7 +154,10 @@ To see the "no cloud" moment, start a request and turn off Wi-Fi while it answer
 
 | Command | What it does |
 |---|---|
-| `npm test` | Money-path tests: receipts, per-modality metering, deposit gate |
+| `npm run quickstart` | Zero-to-demo: wallets, faucet wait, USDT deploy, settlement proof, launch |
+| `npm test` | Money-path tests: receipts, per-modality metering, deposit gate, escrow vouchers |
+| `npm run deploy-escrow` | Compile and deploy the receipt-anchored escrow to Sepolia |
+| `npm run verify-escrow` | Prove one escrow claim end to end with real transactions |
 | `npm run bundle-worker` | Bundle the metering plugin into the provider worker |
 | `npm run fund-wallets` | Generate buyer/seller wallets, print addresses |
 | `npm run deploy-usdt` | Compile and deploy MockUSDT, mint to the buyer |
@@ -157,7 +186,7 @@ Real, never mocked: QVAC delegated inference across all three modalities, provid
 
 Moved out of the mocked list this phase: **discovery** (the buyer now reads the live QVAC registry) and **access control** (the firewall opens on a confirmed on-chain deposit, no out-of-band key exchange).
 
-Still mocked or out of scope, noted here rather than hidden: dynamic pricing beyond fixed per-unit rates, multi-seller routing, reputation, escrow beyond the deposit gate, mainnet, mobile clients. The bundled `MockUSDT` is a 6-decimal test token named USDT for the Sepolia demo; point `USDT_CONTRACT` at a different faucet token if you prefer. The consumer-side transport for the Whisper/TTS legs is ours rather than the SDK's, for the reason described above.
+Still mocked or out of scope, noted here rather than hidden: dynamic pricing beyond fixed per-unit rates, multi-seller routing, reputation, mainnet, mobile clients. The escrow channel is deployed and provable (`npm run verify-escrow`) but the dashboards still settle by direct per-leg transfer by default. The bundled `MockUSDT` is a 6-decimal test token named USDT for the Sepolia demo; point `USDT_CONTRACT` at a different faucet token if you prefer. The consumer-side transport for the Whisper/TTS legs is ours rather than the SDK's, for the reason described above.
 
 Production hardening is also out of scope, and one gap is worth naming: the seller doesn't validate untrusted audio input. The buyer always sends well-formed `f32le` (decoded via ffmpeg and trimmed to a whole number of frames), so the voice pipeline itself is safe. But a peer sending a malformed audio buffer directly could wedge the seller's Whisper model until it restarts, the queue-poisoning bug filed as [#3221](https://github.com/tetherto/qvac/issues/3221). Validating audio input at the provider before that lands upstream would close it.
 
