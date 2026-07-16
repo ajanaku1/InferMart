@@ -26,6 +26,7 @@ qvac/
 
 # Local tooling / editor
 .claude/
+.codewhale/
 ai/
 .vercel
 .DS_Store
